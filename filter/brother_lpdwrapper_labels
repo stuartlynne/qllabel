@@ -28,7 +28,7 @@
 #   ql1060nlpr-1.0.1-0.i386.deb  
 #   ql710wlpr-1.0.2-0.i386.deb
 #
-# The only files used from those files are:
+# The only files used from those packages are:
 #
 #   /opt/brother/PTouch/ql710w/lpd/rastertobrpt1
 #   /opt/brother/PTouch/ql710w/inf/ImagingArea
