@@ -1,0 +1,7 @@
+
+
+/bin/bash /usr/lib/cups/filter/brother_lpdwrapper_62x100 23 root \
+	(stdin) 1 finishings=3 media=4 number-up=1 output-bin=face-down print-color-mode=monochrome \
+    print-quality=5 job-uuid=urn:uuid:48282044-99f7-3a3f-5b38-7bfa0cbff63e \
+    job-originating-host-name=localhost date-time-at-creation= date-time-at-processing= time-at-creation=1503815703 \
+    time-at-processing=1503815703

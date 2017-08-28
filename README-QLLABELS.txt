@@ -17,6 +17,27 @@ the appropriate printer with the lp command:
 
     bin/LABELS
 
+The LABELS script is called by RaceDB to print two different sizes of
+labels with several types of information:
+
+For 2"x4"
+    type-Tag 
+    type-Frame
+    type-Shoulder
+    type-Emergency
+
+For 4"x6"
+    type-Body
+
+The LABELS script will  use the type to queue the file sent by RaceDB
+to the appropriate printer or printer class:
+
+    QL710W - for 2"x4"
+    QL1060N - for 4"x6"
+
+A single printer can be used as the target, or multiple printers in a 
+printer class.
+
 
 The following provide the CUPS printer support:
 
@@ -26,7 +47,7 @@ The following provide the CUPS printer support:
     model/Brother/brother_102x152.ppd
     model/Brother/brother_62x100.ppd
 
-The fillter file should be installed in:
+The filter file should be installed in:
 
     /usr/lib/cups/filter/brother_lpdwrapper_labels
     /usr/lib/cups/filter/brother_lpdwrapper_102x152 -> brother_lpdwrapper_labels
@@ -37,6 +58,9 @@ There are two model ppd files available, these should be installed in:
     /usr/share/cups/model/Brother/brother_102x152.ppd
     /usr/share/cups/model/Brother/brother_62x100.ppd
 
+
+It requires that the Linux LPR support be installed or CUPS:
+    
 
 It requires that the Brother Linux LPR support be installed:
 
@@ -96,4 +120,5 @@ The labels are easily sourced at low cost on Amazon (typically $10/roll in quant
 
 
 
+Updated: Fri Aug 25 23:06:28 PDT 2017 
 
