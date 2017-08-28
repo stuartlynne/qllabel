@@ -38,7 +38,6 @@
 #   /opt/brother/PTouch/ql1060n/inf/paperinfql710wpt1
 #
 
-
 PATH=$PATH:../bin
 
 STDERR() {
@@ -81,7 +80,10 @@ trap onerror 1 2 9 15
 LOGFILE="/dev/null"
 DEBUG=1
 
-LOGFILE=${TMPDIR}/br_cupsfilter_debug_log
+
+TMP=${HOME:-/tmp}
+
+LOGFILE=${TMP}/br_cupsfilter_debug_log
 exec 2>$LOGFILE
 date > $LOGFILE
 STDERR $(date)
@@ -130,7 +132,7 @@ esac
 
 # create a customized RC file that can be used by rastertobrpt1
 #
-RCFILE="/${TMPDIR}/rlabelsrc_$$"
+RCFILE="/${TMP}/rlabelsrc_$$"
 rcfile $TARGET $MediaSize > $RCFILE
 cp $RCFILE $RCFILE-SAVE
 
