@@ -2,22 +2,26 @@
 #
 # Brother QL Label printer filter
 #
-# Copyright (c) 2016-2020 stuart.lynne@gmail.com
+# Copyright (c) 2016 stuart.lynne@gmail.com
 #
-# This is an adaptation of a cups filter that uses Brother provided tools to 
-# rasterize a PDF file on input for printing on QL710W and QL1060N printers.
 #
-# Only two sizes of labels are supported:
+# This is a custom cups filter to allow printing of two specific sizes 
+# of labels on two specific Brother label printers:
 #
 #   62mmx100mm (2.4"x4")    QL710W
 #   102mmx152mm (4"x6")     QL1060n
 #
 # It does not require the Brother Linux CUPS filter.
 #
+# This file should be installed in:
+#
+#   /usr/lib/cups/filter/brother_lpdwrapper_labels
+#
 # There are two model ppd files available, these should be installed in:
 #
 #   /usr/share/cups/model/Brother/brother_102x152.ppd
 #   /usr/share/cups/model/Brother/brother_62x100.ppd
+#
 #
 # It requires that the Brother Linux LPR support be installed:
 #
@@ -111,12 +115,10 @@ qlps2raster_62x100)
 esac
 if [ $# -eq 2 ] ; then
         NETCAT=netcat
-	ARGS="-N"
         HOST=$1
         PORT=$2
 else
         NETCAT=cat
-	ARGS=""
 fi
 
 # create a customized RC file that can be used by rastertobrpt1
@@ -149,7 +151,6 @@ STDERR PSCONV_OP= $PSCONF_OP
 STDERR BRCONV_OP: $BRCONV_OP
 STDERR BRCONV: $BRCONV 
 STDERR NETCAT: $NETCAT
-STDERR ARGS: $ARGS
 STDERR HOST: $HOST
 STDERR PORT: $PORT
 
@@ -180,7 +181,7 @@ GHOST_OPT="-q -dNOPROMPT -dNOPAUSE -dSAFER -sDEVICE=pnggray -sstdout=%stderr -sO
 # | pdftk - cat 1-endeast output - |
 
 (
-    insert ImagingBBox
+     insert ImagingBBox
     echo "<</ImagingBBox [$LEFT $TOP $RIGHT $BOTTOM] /PageOffset [-$LEFT $TOP]>> setpagedevice" 
     # now STDIN
     tee ${PS} | cat 
@@ -210,8 +211,8 @@ function BROTHERQLPRINT {
     #rm $1.rast
 }
 
-#QLPRINT $PNG-* | tee ${RAST} | ${NETCAT} ${ARGS} ${HOST} ${PORT}
-BROTHERQLPRINT $PNG-* | tee ${RAST} | ${NETCAT} ${ARGS} ${HOST} ${PORT}
+#QLPRINT $PNG-* | tee ${RAST} | ${NETCAT} ${HOST} ${PORT}
+BROTHERQLPRINT $PNG-* | tee ${RAST} | ${NETCAT} ${HOST} ${PORT}
 
 
 

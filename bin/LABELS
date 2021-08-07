@@ -77,7 +77,7 @@
 # split file name apart to get information on who requested the label and the type of label.
 #
 
-PATH=$PATH:/usr/local/bin:../bin
+PATH=$PATH:../bin
 
 STDERR() {
         /bin/echo -en $* "\n" 1>&2
@@ -171,9 +171,13 @@ esac
 /bin/echo "FILE: $FILE"
 /bin/echo "SMALL: $SMALL"
 /bin/echo "LARGE: $LARGE"
+/bin/echo
+/bin/echo "QLPS2RASTER: $QLPS2RASTER"
+/bin/echo "POOL: $POOL"
 
 ) >> /tmp/LABELS.txt
 
+cp $* /tmp/TEST.pdf
 #(
 #echo PORT: $PORT
 #echo ANTENNA: $ANTENNA
@@ -190,23 +194,19 @@ STATUS=$(qlstatus -q < /dev/null)
 RC=$?
 
 if [ "$RC" -ne 0 ] ; then
-    lp -d ${PRINTERCLASS} ${PAGES}
+    #lp -d ${PRINTERCLASS} ${PAGES}
+    cat > /tmp/$PRINTERCLASS-$$.pdf
     echo
     killme QLMux not running, could not get status, lp used
+    sleep 60
+    exit 1
 fi
 
 if [ -n "${STATUS}" ] ; then
     #figlet -f banner Check Printers
-    echo
     echo Check Printers!
     echo "${STATUS}"
 
-fi
-
-BATTERY=$(acpi -a | sed -e 's/.* //')
-if [ "$BATTERY" = "off-line" ] ; then
-    echo Check Server Power Supply!
-    acpi -b
 fi
 
 
