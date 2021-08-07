@@ -25,6 +25,26 @@
 # the TCP port that the server responds to, e.g. 8000 or 8001 etc.
 #
 
+# The antenna ports are used to split the output across two sets of printer pools
+# for the left and right side of the registration tables. 
+#
+# The pools are implemented in qlmux. Each pool has a list of primary printers and a backup printer. 
+# The pools are access by sending the data to the desginated port.
+#
+# Antenna 1 and 2:
+#   small1 - 9101, (ql710w1, ql710w2), (ql710w3)
+#   large1 - 9103, (ql1060n1), (ql1060n2)
+#
+# Antenna 3 and 4:
+#   small2 - 9102, (ql710w3, ql710w2), (ql710w1)
+#   large2 - 9104, (ql1060n2), (ql1060n1)
+
+# Currently we are converting the pdf on stdin to png files using qlps2raster. That
+# in turn uses ghostscript and qlprint to produce Brother QL raster on stdout.
+#
+
+#
+# Currently as a backup only. 
 #
 # For Linux we will have one or more printers added to the CUPS printing system. E.g.:
 #
@@ -50,11 +70,38 @@
 #
 # 
 
+# debug
+#echo $1
+#set -x
 
 # split file name apart to get information on who requested the label and the type of label.
 #
-for i in $(echo $1 | sed -e 's/_/ /g'); do
+
+PATH=$PATH:/usr/local/bin:../bin
+
+STDERR() {
+        /bin/echo -en $* "\n" 1>&2
+}
+
+
+onerror() {
+        exit 1
+}
+killme() {
+        figlet -f banner ERROR 1>&2
+        /bin/echo -en "\n\n$*\n\n" 1>&2
+        kill -1 $$ 2>&1 > /dev/null
+}
+
+trap onerror 1 2 9 15
+
+
+
+for i in $(echo $1 | sed -e 's/.*pdfs\///' -e 's/_/ /g'); do
 case $i in
+bib-*)
+    BIB=$i
+    ;;
 port-*)
     PORT=$i
     ;;
@@ -70,30 +117,104 @@ type-*)
 esac
 done
 
-# determine lp destination by label type
+
+# use antenna information to determine what printer pools to use
+#
+case ${ANTENNA} in
+
+antenna-0 | antenna-1 | antenna-2)
+    SMALL=9001
+    LARGE=9003
+    ;;
+antenna-3 | antenna-4 | *)
+    SMALL=9002
+    LARGE=9004
+    ;;
+esac
+
+
+DIR=$(dirname $0)
+ARG0=$(basename $0)
+
+
+# use the type information to determine what label size to use.
 #
 case ${TYPE} in
 type-Tag | type-Frame | type-Shoulder | type-Emergency )
     PRINTERCLASS=QL710W
+    QLPS2RASTER=${DIR}/qlps2raster_62x100
+    POOL=$SMALL
     PAGES=""
     ;;
 type-Body)
     PRINTERCLASS=QL1060N
-    PAGES="-P 1"
+    QLPS2RASTER=${DIR}/qlps2raster_102x152
+    POOL=$LARGE
+    PAGES=""
+    ;;
+*)
+    PRINTERCLASS=QL1060N
+    QLPS2RASTER=${DIR}/qlps2raster_102x152
+    POOL=$LARGE
+    PAGES=""
     ;;
 esac
 
-# debug
+(date; 
+/bin/echo $0: $*
+/bin/echo "DIR: $DIR"
+/bin/echo "ARG0: $ARG0"
+/bin/echo "BIB: $BIB"
+/bin/echo "PORT: $PORT"
+/bin/echo "ANTENNA: $ANTENNA"
+/bin/echo "TYPE: $TYPE"
+/bin/echo "FILE: $FILE"
+/bin/echo "SMALL: $SMALL"
+/bin/echo "LARGE: $LARGE"
+
+) >> /tmp/LABELS.txt
+
+#(
 #echo PORT: $PORT
 #echo ANTENNA: $ANTENNA
 #echo TYPE: $TYPE
 #echo FILE: $FILE
-#cat > /tmp/$FILE
+#echo SMALL: $SMALL
+#echo LARGE: $LARGE
+#) 1>&2
 
-#(date; pwd; ls  -l) >> /tmp/LABELS.txt
 
-#cat > /tmp/$TYPE.pdf
+#STATUS=$(netcat -w 1 127.0.0.1 9000  < /dev/null)
+STATUS=$(qlstatus -q < /dev/null)
 
-# XXX remove echo 
-lp -d ${PRINTERCLASS} ${PAGES}
+RC=$?
+
+if [ "$RC" -ne 0 ] ; then
+    lp -d ${PRINTERCLASS} ${PAGES}
+    echo
+    killme QLMux not running, could not get status, lp used
+fi
+
+if [ -n "${STATUS}" ] ; then
+    #figlet -f banner Check Printers
+    echo
+    echo Check Printers!
+    echo "${STATUS}"
+
+fi
+
+BATTERY=$(acpi -a | sed -e 's/.* //')
+if [ "$BATTERY" = "off-line" ] ; then
+    echo Check Server Power Supply!
+    acpi -b
+fi
+
+
+# PDF is on STDIN
+
+#${QLPS2RASTER} | netcat  127.0.0.1 ${POOL} || killme QLMux not running, could not send job
+${QLPS2RASTER} 127.0.0.1 ${POOL} || killme QLMux not running, could not send job
+
+
+exit 0
 

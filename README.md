@@ -40,6 +40,12 @@ The LABELS script will  use the type to queue the file sent by RaceDB
 to the appropriate printer via qlmuxd after rasterizing it with the *qlps2raster*
 script. 
 
+N.B. the *LABELS* script uses the *qlstatus* script (from qlmux package) to check 
+that the *qlmuxd* daemon is running and get the printer status.
+
+N.B. the *LABELS* script uses the *acpi* program (from the acpi debian package) to 
+check for battery status.
+
 ## bin/qlps2raster
 
 This script uses Brother provided tools to rasterize a PDF file on input for 
@@ -101,6 +107,16 @@ The labels are easily sourced at low cost on Amazon (typically $10/roll in quant
 
     QL1060N - DK-1241 2"x4" - 200
     QL710W  - DK-1201 2-3/7"x4" - 300
+
+## Required Packages
+### Brother debian packages
+-  ql1060nlpr-1.0.1-0.i386.deb  
+-  ql710wlpr-1.0.2-0.i386.deb
+
+### Linux debian
+- acpi
+
+
 
 ### Updated: Mon Jan 27 22:38:46 PST 2020 
 
