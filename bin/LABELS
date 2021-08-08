@@ -95,7 +95,8 @@ killme() {
 
 trap onerror 1 2 9 15
 
-
+# Break arg, e.g. 230489203498023809_bib-356_port-8000_antenna-2_type-Frame.pdf
+# intel components, iterate across them to get information we need.
 
 for i in $(echo $1 | sed -e 's/.*pdfs\///' -e 's/_/ /g'); do
 case $i in
